@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionFileOpen"/>
+   </widget>
+   <widget class="QMenu" name="menuLayout">
+    <property name="title">
+     <string>Layout</string>
+    </property>
+    <addaction name="actionLayoutDot"/>
+    <addaction name="actionLayoutTwopi"/>
+    <addaction name="actionLayoutCirco"/>
+    <addaction name="actionLayoutNeato"/>
+    <addaction name="actionLayoutFdp"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuLayout"/>
+  </widget>
+  <action name="actionFileOpen">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+  </action>
+  <action name="actionLayoutDot">
+   <property name="text">
+    <string>Dot</string>
+   </property>
+  </action>
+  <action name="actionTwopi">
+   <property name="text">
+    <string>TwoPi</string>
+   </property>
+  </action>
+  <action name="actionLayoutTwopi">
+   <property name="text">
+    <string>Twopi</string>
+   </property>
+  </action>
+  <action name="actionLayoutCirco">
+   <property name="text">
+    <string>Circo</string>
+   </property>
+  </action>
+  <action name="actionLayoutNeato">
+   <property name="text">
+    <string>Neato</string>
+   </property>
+  </action>
+  <action name="actionLayoutFdp">
+   <property name="text">
+    <string>Fdp</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
