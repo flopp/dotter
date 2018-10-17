@@ -6,7 +6,7 @@ compiler: clang
 os: linux
 
 install:
-    - sudo apt-get -y update -qq && sudo apt-get -y install qt5-default qt5svg5-dev graphviz; fi
+    - sudo apt-get -y update -qq && sudo apt-get -y install qt5-default qt5svg5-dev graphviz
 
 script:
     - echo "Building for ${MKSPEC} in ${BUILD_MODE} mode..."
