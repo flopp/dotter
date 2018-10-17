@@ -17,7 +17,7 @@ install:
     - if [ "${TRAVIS_OS_NAME}" = "linux" -a "${CXX}" = "clang++" ]; then export MKSPEC=linux-clang; fi
     - if [ "${TRAVIS_OS_NAME}" = "linux" -a "${CXX}" = "g++" ]; then export MKSPEC=linux-g++; fi
 
-    - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then sudo apt-get -y update -qq && sudo apt-get -y install qt5-default libqt5svg5-dev graphviz; fi
+    - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then sudo apt-get -y update -qq && sudo apt-get -y install qt5-default qt5svg5-dev graphviz; fi
 
 script:
     - echo "Building for ${MKSPEC} in ${BUILD_MODE} mode..."
