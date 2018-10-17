@@ -6,12 +6,12 @@ compiler: clang
 os: linux
 
 install:
-    - sudo apt-get -y update -qq && sudo apt-get -y install qt5-default libqt5svg5-dev graphviz
+    - sudo apt-get -y update -qq && sudo apt-get -y install clang qt5-default libqt5svg5-dev graphviz
 
 script:
     - mkdir build
     - cd build
-    - qmake ../dotter.pro
+    - qmake ../dotter.pro -spec linux-clang QMAKE_CXXFLAGS+=-std=c++11
     - make
     - ls -lRa .
     - file dotter/dotter
