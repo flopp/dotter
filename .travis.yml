@@ -9,10 +9,9 @@ install:
     - sudo apt-get -y update -qq && sudo apt-get -y install qt5-default libqt5svg5-dev graphviz
 
 script:
-    - echo "Building for ${MKSPEC} in ${BUILD_MODE} mode..."
     - mkdir build
     - cd build
-    - qmake ../dotter.pro CONFIG+=${BUILD_MODE}
+    - qmake ../dotter.pro
     - make
     - ls -lRa .
     - file dotter/dotter
