@@ -5,11 +5,16 @@ Qt based viewer for GraphViz (.dot) files
 
 ## Compile
 
+To compile dotter, you need a working Qt5 installation.
+On Ubuntu, you can install the required packages by
+
+```
+sudo apt install qt5-default libqt5svg5-dev graphviz
+```
+
+
 ```
 git clone https://github.com/flopp/dotter.git
-cd dotter
-qmake
-make
-
-dotter/dotter
+mkdir build
+(cd build && qmake ../dotter.pro && make)
 ```

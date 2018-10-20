@@ -1,70 +1,79 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
+#include <QString>
 
 #include "abortwidget.h"
+#include "app.h"
+#include "config.h"
 #include "mainwindow.h"
 #include "svgview.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow{parent},
-    m_ui{new Ui_MainWindow},
-    m_svgView{new SvgView{}},
-    m_abortWidget{new AbortWidget{}},
-    m_layoutProcess{new QProcess{this}},
-    m_layoutMapper{new QSignalMapper{this}}
+        QMainWindow(parent), _ui(new Ui_MainWindow), _svgView(new SvgView()), _abortWidget(
+                new AbortWidget()), _process(new QProcess(this)), _toolMapper(
+                new QSignalMapper(this))
 {
-    m_ui->setupUi(this);
+    _ui->setupUi(this);
+    setWindowTitle("dotter");
 
-    connect(m_ui->actionFileOpen, &QAction::triggered, this, &MainWindow::showFileOpenDialog);
+    connect(_ui->actionFileOpen, &QAction::triggered, this,
+            &MainWindow::showFileOpenDialog);
 
-    connect(m_abortWidget, &AbortWidget::aborted, this, &MainWindow::stopLayout);
-    
-    QWidget* container{new QWidget{this}};
+    connect(_abortWidget, &AbortWidget::aborted, this,
+            &MainWindow::stopLayout);
+
+    QWidget* container = new QWidget(this);
     {
-        auto layout{new QVBoxLayout{container}};
+        auto layout = new QVBoxLayout(container);
         layout->setSpacing(0);
         layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(m_svgView);
-        layout->addWidget(m_abortWidget);
+        layout->addWidget(_svgView);
+        layout->addWidget(_abortWidget);
     }
     setCentralWidget(container);
-    m_abortWidget->hide();
+    _abortWidget->hide();
 
-    connect(m_layoutProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(layoutFinished(int, QProcess::ExitStatus)));
+    connect(_process, SIGNAL(finished(int, QProcess::ExitStatus)), this,
+            SLOT(layoutFinished(int, QProcess::ExitStatus)));
 
-    connect(m_layoutMapper, SIGNAL(mapped(const QString&)), this, SLOT(setLayout(const QString&)));
+    connect(_toolMapper, SIGNAL(mapped(const QString&)), this,
+            SLOT(setLayout(const QString&)));
 
-    m_ui->actionLayoutDot->setProperty("layout", "dot");
-    m_ui->actionLayoutTwopi->setProperty("layout", "twopi");
-    m_ui->actionLayoutCirco->setProperty("layout", "circo");
-    m_ui->actionLayoutNeato->setProperty("layout", "neato");
-    m_ui->actionLayoutFdp->setProperty("layout", "fdp");
-    
-    auto group{new QActionGroup{this}};
-    for (auto action: {m_ui->actionLayoutDot, m_ui->actionLayoutTwopi, m_ui->actionLayoutCirco, m_ui->actionLayoutNeato, m_ui->actionLayoutFdp})
+    _ui->actionLayoutDot->setProperty("layout", "dot");
+    _ui->actionLayoutTwopi->setProperty("layout", "twopi");
+    _ui->actionLayoutCirco->setProperty("layout", "circo");
+    _ui->actionLayoutNeato->setProperty("layout", "neato");
+    _ui->actionLayoutFdp->setProperty("layout", "fdp");
+
+    auto group = new QActionGroup(this);
+    for (auto action :
+    { _ui->actionLayoutDot, _ui->actionLayoutTwopi, _ui->actionLayoutCirco,
+            _ui->actionLayoutNeato, _ui->actionLayoutFdp })
     {
         action->setCheckable(true);
         group->addAction(action);
-        connect(action, SIGNAL(triggered()), m_layoutMapper, SLOT(map()));
-        m_layoutMapper->setMapping(action, action->property("layout").toString());
+        connect(action, SIGNAL(triggered()), _toolMapper, SLOT(map()));
+        _toolMapper->setMapping(action,
+                action->property("layout").toString());
     }
-    
-    m_ui->actionLayoutDot->setChecked(true);
+
+    _ui->actionLayoutDot->setChecked(true);
 }
 
 MainWindow::~MainWindow()
 {
-    delete m_ui;
+    delete _ui;
 }
 
 void MainWindow::showFileOpenDialog()
 {
     stopLayout();
-    
-    QString fileName = QFileDialog::getOpenFileName(this, "Open DOT File", "", "*.dot" );
-    
+
+    QString fileName = QFileDialog::getOpenFileName(this, "Open DOT File", "",
+            "DOT Files (*.dot);;All Files (*)");
+
     if (fileName != "")
     {
         openFile(fileName);
@@ -77,57 +86,86 @@ void MainWindow::openFile(const QString& fileName)
 
     if (!QFile::exists(fileName))
     {
-        QMessageBox::critical(this, "dotter", QString("The file \"%1\" does not exist!").arg(fileName));
+        QMessageBox::critical(this, "dotter",
+                QString("The file \"%1\" does not exist!").arg(fileName));
         return;
     }
-    
-    m_fileName = fileName;
+
+    _fileName = fileName;
     startLayout();
 }
 
 void MainWindow::layoutFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    m_abortWidget->hide();
-    if ((exitStatus == QProcess::NormalExit) && (exitCode == 0))
+    _abortWidget->hide();
+
+    switch (exitStatus)
     {
-        m_svgView->load(m_layoutProcess->readAll());
+        case QProcess::NormalExit:
+            if (exitCode == 0)
+            {
+                setWindowTitle(QString("dotter - %1").arg(_fileName));
+                _svgView->load(_process->readAllStandardOutput());
+            }
+            else
+            {
+                QString msg = QString("%1 returned with exit code %2.\n%3\n%4");
+                msg = msg.arg(_process->program());
+                msg = msg.arg(exitCode);
+                msg = msg.arg(QString(_process->readAllStandardOutput()));
+                msg = msg.arg(QString(_process->readAllStandardError()));
+                QMessageBox::critical(this, "dotter", msg);
+            }
+            break;
+        case QProcess::CrashExit:
+            QString msg = QString("%1 has crashed.\n%2\n%3");
+            msg = msg.arg(_process->program());
+            msg = msg.arg(QString(_process->readAllStandardOutput()));
+            msg = msg.arg(QString(_process->readAllStandardError()));
+            QMessageBox::critical(this, "dotter", msg);
+            break;
     }
 }
 
 void MainWindow::stopLayout()
 {
-    m_abortWidget->hide();
-    if (m_layoutProcess->state() != QProcess::NotRunning)
+    _abortWidget->hide();
+    if (_process->state() != QProcess::NotRunning)
     {
-        m_layoutProcess->kill();
-        m_layoutProcess->waitForFinished();
+        _process->kill();
+        _process->waitForFinished();
     }
 }
 
 void MainWindow::startLayout()
 {
     stopLayout();
-    
-    if (!m_fileName.isEmpty())
+
+    if (!_fileName.isEmpty())
     {
-        m_abortWidget->setMessage(QString("Computing '%1' layout for '%2'...").arg(m_layout, m_fileName));
-        m_abortWidget->show();
+        Config* config = static_cast<App*>(qApp)->config();
+        const QString exePath = config->getToolPath(_tool);
+
+        _abortWidget->setMessage(
+                QString("Computing '%1' layout for '%2'...").arg(_tool,
+                        _fileName));
+        _abortWidget->show();
         QStringList proc_args;
         proc_args.push_back("-Tsvg");
-        proc_args.push_back(m_fileName);
-        
-        m_layoutProcess->start(m_layout, proc_args);
-    }    
+        proc_args.push_back(_fileName);
+
+        _process->start(exePath, proc_args);
+    }
 }
 
 void MainWindow::setLayout(const QString& layout)
 {
-    if (layout == m_layout)
+    if (layout == _tool)
     {
         return;
     }
-    
+
     stopLayout();
-    m_layout = layout;
+    _tool = layout;
     startLayout();
 }

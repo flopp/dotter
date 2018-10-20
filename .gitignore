@@ -4,3 +4,4 @@ dotter/dotter
 .qmake.stash
 moc_*
 ui_*
+/build/

@@ -9,16 +9,19 @@
 
 SvgView::SvgView(QWidget* parent) :
     QWidget{parent},
-    m_renderer{new QSvgRenderer{this}}
+    _renderer{new QSvgRenderer{this}}
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     
-    connect(m_renderer, SIGNAL(repaintNeeded()), this, SLOT(update()));
+    connect(_renderer, SIGNAL(repaintNeeded()), this, SLOT(update()));
 }
+
+SvgView::~SvgView()
+{}
 
 void SvgView::load(const QString& fileName)
 {
-    if (!(m_renderer->load(fileName)))
+    if (!(_renderer->load(fileName)))
     {
         qDebug() << "Loading SVG from File failed" << endl;
     }
@@ -28,7 +31,7 @@ void SvgView::load(const QString& fileName)
 
 void SvgView::load(const QByteArray& svgData)
 {
-    if (!(m_renderer->load(svgData)))
+    if (!(_renderer->load(svgData)))
     {
         qDebug() << "Loading SVG from QByteArray failed" << endl;
     }
@@ -38,32 +41,32 @@ void SvgView::load(const QByteArray& svgData)
 
 void SvgView::zoomIn()
 {
-    m_scale *= 1.1;
+    _scale *= 1.1;
     update();
 }
 
 void SvgView::zoomOut()
 {
-    m_scale *= 0.9;
+    _scale *= 0.9;
     update();
 }
 
 void SvgView::zoomFit()
 {
-    if (m_renderer->isValid())
+    if (_renderer->isValid())
     {
-        const QRectF& viewBox{m_renderer->viewBox()};
+        const QRectF& viewBox{_renderer->viewBox()};
                 
         if ((width() * viewBox.height()) > (height() * viewBox.width()))
         {
-            m_scale = height() / viewBox.height();
+            _scale = height() / viewBox.height();
         }
         else
         {
-            m_scale = width() / viewBox.width();
+            _scale = width() / viewBox.width();
         }
         
-        m_translation = QPointF{0, 0};
+        _translation = QPointF{0, 0};
         
         update();
     }
@@ -74,53 +77,52 @@ void SvgView::paintEvent(QPaintEvent*)
     QPainter p{this};
     p.fillRect(rect(), Qt::white);
 
-    if (!(m_renderer->isValid())) {
+    if (!(_renderer->isValid())) {
         return;
     }
         
     p.setWindow(rect());
     
-    p.scale(m_scale, m_scale);
-    p.translate(m_translation);
-    m_renderer->render(&p, m_renderer->viewBox());
+    p.scale(_scale, _scale);
+    p.translate(_translation);
+    _renderer->render(&p, _renderer->viewBox());
 }
 
 void SvgView::wheelEvent(QWheelEvent* event)
 {
-    double oldScale{m_scale};
+    double oldScale{_scale};
     
     if (event->delta() > 0)
     {
-        m_scale *= 1.1;
+        _scale *= 1.1;
     }
     else
     {
-        m_scale *= 0.9;
+        _scale *= 0.9;
     }
     
-    m_translation += ((1.0 / m_scale) - (1.0 / oldScale)) * event->pos();
-    
+    _translation += ((1.0 / _scale) - (1.0 / oldScale)) * event->pos();
     
     update();
 }
 
 void SvgView::mousePressEvent(QMouseEvent* event)
 {
-    m_mousePressPos = event->pos();
-    m_startTranslation = m_translation;
+    _mousePressPos = event->pos();
+    _startTranslation = _translation;
     
     event->accept();
 }
 
 void SvgView::mouseMoveEvent(QMouseEvent* event)
 {
-    if (m_mousePressPos.isNull())
+    if (_mousePressPos.isNull())
     {
         event->ignore();
         return;
     }
 
-    m_translation = m_startTranslation + (QPointF{event->pos() - m_mousePressPos} / m_scale);
+    _translation = _startTranslation + (QPointF{event->pos() - _mousePressPos} / _scale);
 
     event->accept();
 
@@ -129,6 +131,6 @@ void SvgView::mouseMoveEvent(QMouseEvent* event)
 
 void SvgView::mouseReleaseEvent(QMouseEvent* event)
 {
-    m_mousePressPos = QPoint{};
+    _mousePressPos = QPoint{};
     event->accept();
 }
