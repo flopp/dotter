@@ -23,6 +23,7 @@ class MainWindow: public QMainWindow
 
     private slots:
         void layoutFinished(int exitCode, QProcess::ExitStatus exitStatus);
+        void layoutError(QProcess::ProcessError error);
         void stopLayout();
         void startLayout();
         void setLayout(const QString& layout);
@@ -34,5 +35,6 @@ class MainWindow: public QMainWindow
         QProcess* _process{ nullptr };
         QString _fileName;
         QString _tool{ "dot" };
+        QString _lastCommandLine;
         QSignalMapper* _toolMapper{ nullptr };
 };

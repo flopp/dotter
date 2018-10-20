@@ -44,7 +44,7 @@ QString Config::getToolPath(const QString& tool) const
 	{
 		return getTwopiPath();
 	}
-	else if (tool == "Circo")
+	else if (tool == "circo")
 	{
 		return getCircoPath();
 	}
