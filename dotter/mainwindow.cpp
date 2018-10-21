@@ -8,14 +8,18 @@
 #include "abortwidget.h"
 #include "app.h"
 #include "config.h"
+#include "layoutprocess.h"
 #include "mainwindow.h"
 #include "svgview.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget* parent) :
-        QMainWindow(parent), _ui(new Ui_MainWindow), _svgView(new SvgView()), _abortWidget(
-                new AbortWidget()), _toolMapper(
-                new QSignalMapper(this))
+        QMainWindow(parent),
+        _ui(new Ui_MainWindow),
+        _svgView(new SvgView()),
+        _abortWidget(new AbortWidget()),
+        _process(new LayoutProcess(this)),
+        _toolMapper(new QSignalMapper(this))
 {
     _ui->setupUi(this);
     setWindowTitle("dotter");
@@ -23,8 +27,13 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(_ui->actionFileOpen, &QAction::triggered, this,
             &MainWindow::showFileOpenDialog);
 
-    connect(_abortWidget, &AbortWidget::aborted, this,
-            &MainWindow::stopLayout);
+    connect(_process, &LayoutProcess::started, this, &MainWindow::layoutStarted);
+    connect(_process, &LayoutProcess::stopped, this, &MainWindow::layoutStopped);
+    connect(_process, &LayoutProcess::finished, this, &MainWindow::layoutFinished);
+    connect(_process, &LayoutProcess::failed, this, &MainWindow::layoutError);
+
+    connect(_abortWidget, &AbortWidget::aborted, _process,
+            &LayoutProcess::stop);
 
     QWidget* container = new QWidget(this);
     {
@@ -63,13 +72,13 @@ MainWindow::MainWindow(QWidget* parent) :
 
 MainWindow::~MainWindow()
 {
-    stopLayout();
+    _process->stop();
     delete _ui;
 }
 
 void MainWindow::showFileOpenDialog()
 {
-    stopLayout();
+    _process->stop();
 
     QString fileName = QFileDialog::getOpenFileName(this, "Open DOT File", "",
             "DOT Files (*.dot);;All Files (*)");
@@ -82,7 +91,7 @@ void MainWindow::showFileOpenDialog()
 
 void MainWindow::openFile(const QString& fileName)
 {
-    stopLayout();
+    _process->stop();
 
     if (!QFile::exists(fileName))
     {
@@ -92,119 +101,29 @@ void MainWindow::openFile(const QString& fileName)
     }
 
     _fileName = fileName;
-    startLayout();
+    _process->start(_tool, fileName);
 }
 
-void MainWindow::layoutFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void MainWindow::layoutStarted(const QString& commandLine)
 {
-    switch (exitStatus)
-    {
-        case QProcess::NormalExit:
-            if (exitCode == 0)
-            {
-                setWindowTitle(QString("dotter - %1").arg(_fileName));
-                _svgView->load(_process->readAllStandardOutput());
-            }
-            else
-            {
-                QString msg = QString("%1 returned with exit code %2.\n%3\n%4");
-                msg = msg.arg(_lastCommandLine);
-                msg = msg.arg(exitCode);
-                msg = msg.arg(QString(_process->readAllStandardOutput()));
-                msg = msg.arg(QString(_process->readAllStandardError()));
-                QMessageBox::critical(this, "dotter", msg);
-            }
-            break;
-        case QProcess::CrashExit:
-            QString msg = QString("%1 has crashed.\n%2\n%3");
-            msg = msg.arg(_lastCommandLine);
-            msg = msg.arg(QString(_process->readAllStandardOutput()));
-            msg = msg.arg(QString(_process->readAllStandardError()));
-            QMessageBox::critical(this, "dotter", msg);
-            break;
-    }
-
-    stopLayout();
+    _abortWidget->setMessage(QString("Running '%1'...").arg(commandLine));
+    _abortWidget->show();
 }
 
-void MainWindow::layoutError(QProcess::ProcessError error)
-{
-    switch (error)
-    {
-        case QProcess::FailedToStart:
-        {
-            QString msg = QString("Failed to start %1.");
-            msg = msg.arg(_lastCommandLine);
-            QMessageBox::critical(this, "dotter", msg);
-            break;
-        }
-        default:
-        {
-            QString msg = QString("Unknown error when running %1.");
-            msg = msg.arg(_lastCommandLine);
-            QMessageBox::critical(this, "dotter", msg);
-            break;
-        }
-    }
-
-    stopLayout();
-}
-
-void MainWindow::stopLayout()
+void MainWindow::layoutStopped()
 {
     _abortWidget->hide();
-
-    if (_process)
-    {
-        if (_process->state() != QProcess::NotRunning)
-        {
-            _process->kill();
-            _process->waitForFinished();
-        }
-
-        delete _process;
-        _process = nullptr;
-    }
 }
 
-void MainWindow::startLayout()
+void MainWindow::layoutFinished(const QByteArray& result)
 {
-    stopLayout();
+    setWindowTitle(QString("dotter - %1").arg(_fileName));
+    _svgView->load(result);
+}
 
-    assert(!_process);
-
-    if (_fileName.isEmpty())
-    {
-        return;
-    }
-
-    _process = new QProcess(this);
-    connect(_process, SIGNAL(finished(int, QProcess::ExitStatus)), this,
-            SLOT(layoutFinished(int, QProcess::ExitStatus)));
-
-    connect(_process, &QProcess::errorOccurred, this, &MainWindow::layoutError);
-
-    Config* config = static_cast<App*>(qApp)->config();
-    const QString exePath = config->getToolPath(_tool);
-    if (exePath.isEmpty())
-    {
-        QString msg = QString("No configured executable path for tool '%1'.");
-        msg = msg.arg(_tool);
-        QMessageBox::critical(this, "dotter", msg);
-        return;
-    }
-
-    _abortWidget->setMessage(
-            QString("Computing '%1' layout for '%2'...").arg(_tool,
-                    _fileName));
-    _abortWidget->show();
-    QStringList proc_args;
-    proc_args.push_back("-Tsvg");
-    proc_args.push_back(_fileName);
-
-    _lastCommandLine = QString("%1 -tsvg %2").arg(exePath).arg(_fileName);
-
-    _process->start(exePath, proc_args);
+void MainWindow::layoutError(const QString& message)
+{
+    QMessageBox::critical(this, "dotter", message);
 }
 
 void MainWindow::setLayout(const QString& layout)
@@ -214,7 +133,7 @@ void MainWindow::setLayout(const QString& layout)
         return;
     }
 
-    stopLayout();
+    _process->stop();
     _tool = layout;
-    startLayout();
+    _process->start(_tool, _fileName);
 }

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QProcess>
 
 class QSignalMapper;
 
 class AbortWidget;
+class LayoutProcess;
 class SvgView;
 class Ui_MainWindow;
 
@@ -22,19 +22,18 @@ class MainWindow: public QMainWindow
         void openFile(const QString& fileName);
 
     private slots:
-        void layoutFinished(int exitCode, QProcess::ExitStatus exitStatus);
-        void layoutError(QProcess::ProcessError error);
-        void stopLayout();
-        void startLayout();
+        void layoutStarted(const QString& commandLine);
+        void layoutStopped();
+        void layoutFinished(const QByteArray& result);
+        void layoutError(const QString& message);
         void setLayout(const QString& layout);
 
     private:
         Ui_MainWindow* _ui{ nullptr };
         SvgView* _svgView{ nullptr };
         AbortWidget* _abortWidget{ nullptr };
-        QProcess* _process{ nullptr };
+        LayoutProcess* _process{nullptr};
         QString _fileName;
         QString _tool{ "dot" };
-        QString _lastCommandLine;
         QSignalMapper* _toolMapper{ nullptr };
 };
