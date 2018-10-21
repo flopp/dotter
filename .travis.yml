@@ -1,17 +1,27 @@
-sudo: required
-dist: trusty
-language: cpp
-
-compiler: clang
 os: linux
+language: cpp
+dist: trusty
 
-install:
-    - sudo apt-get -y update -qq && sudo apt-get -y install clang qt5-default libqt5svg5-dev graphviz
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - sourceline: "ppa:beineri/opt-qt-5.10.1-trusty"
+    packages:
+      - graphviz
+      - gcc-7
+      - g++-7
+      - qt510-meta-minimal
+      - qt510svg
+      - qt510tools
 
 script:
+    - export CC=gcc-7 ;
+    - export CXX=g++-7 ;
+    - source /opt/qt510/bin/qt510-env.sh ;
     - mkdir build
     - cd build
-    - qmake ../dotter.pro -spec linux-clang QMAKE_CXXFLAGS+=-std=c++11
+    - qmake ../dotter.pro
     - make
     - ls -lRa .
     - file dotter/dotter
