@@ -1,7 +1,8 @@
 #pragma once
 
+#include <QtWidgets/QWidget>
+
 class Ui_AbortWidget;
-#include <QWidget>
 
 class AbortWidget: public QWidget
 {

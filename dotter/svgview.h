@@ -1,12 +1,11 @@
 #pragma once
 
-#include <QtSvg>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
+class QMouseEvent;
 class QPaintEvent;
 class QSvgRenderer;
 class QWheelEvent;
-class QMouseEvent;
 
 class SvgView: public QWidget
 {

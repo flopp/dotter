@@ -1,11 +1,10 @@
 #include "svgview.h"
 
-#include <QSvgRenderer>
-
-#include <QApplication>
-#include <QPainter>
-#include <QWheelEvent>
-#include <QtDebug>
+#include <QtCore/QtDebug>
+#include <QtGui/QPainter>
+#include <QtGui/QWheelEvent>
+#include <QtSvg/QSvgRenderer>
+#include <QtWidgets/QApplication>
 
 SvgView::SvgView(QWidget* parent) :
     QWidget{parent},

@@ -1,12 +1,11 @@
 #pragma once
 
-#include <QMainWindow>
+#include <QtWidgets/QMainWindow>
 
-class QSignalMapper;
-
-class AbortWidget;
 class LayoutProcess;
-class SvgView;
+class QActionGroup;
+class QMenu;
+class QSignalMapper;
 class Ui_MainWindow;
 
 class MainWindow: public QMainWindow
@@ -29,11 +28,21 @@ class MainWindow: public QMainWindow
         void setLayout(const QString& layout);
 
     private:
-        Ui_MainWindow* _ui{ nullptr };
-        SvgView* _svgView{ nullptr };
-        AbortWidget* _abortWidget{ nullptr };
+        QIcon loadIcon(QString name) const;
+        QAction* addLayoutAction(QActionGroup* group, QMenu* menu, QString label, QString command);
+
+    private:
+        Ui_MainWindow* _ui{nullptr};
         LayoutProcess* _process{nullptr};
         QString _fileName;
-        QString _tool{ "dot" };
-        QSignalMapper* _toolMapper{ nullptr };
+        QString _tool{"dot"};
+        QSignalMapper* _toolMapper{nullptr};
+
+        QAction* _openAction{nullptr};
+        QAction* _zoomFitAction{nullptr};
+        QAction* _layoutDotAction{nullptr};
+        QAction* _layoutTwopiAction{nullptr};
+        QAction* _layoutCircoAction{nullptr};
+        QAction* _layoutNeatoAction{nullptr};
+        QAction* _layoutFdpAction{nullptr};
 };

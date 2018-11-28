@@ -1,4 +1,4 @@
-#include <QObject>
+#include <QtCore/QObject>
 #include "app.h"
 #include "mainwindow.h"
 

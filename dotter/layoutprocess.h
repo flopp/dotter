@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QObject>
-#include <QProcess>
+#include <QtCore/QObject>
+#include <QtCore/QProcess>
 
 class LayoutProcess : public QObject
 {
@@ -30,5 +30,6 @@ class LayoutProcess : public QObject
 
     private:
         QProcess* _process{nullptr};
+        bool _killed{false};
         QString _lastCommandLine;
 };
