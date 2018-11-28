@@ -118,4 +118,5 @@ void LayoutProcess::layoutError(QProcess::ProcessError error)
             break;
         }
     }
+    emit stopped();
 }
