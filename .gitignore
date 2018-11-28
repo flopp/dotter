@@ -1,7 +1,5 @@
-Makefile
-*.o
-dotter/dotter
+.cproject
+.project
+.settings
 .qmake.stash
-moc_*
-ui_*
 /build/
