@@ -38,6 +38,9 @@ MainWindow::MainWindow(QWidget* parent) :
     layoutButton->setPopupMode(QToolButton::InstantPopup);
     layoutButton->setIcon(loadIcon("document-page-setup"));
     _ui->toolBar->addWidget(layoutButton);
+
+    _ui->toolBar->addAction(loadIcon("zoom-in"), "Zoom In", _ui->view, &SvgView::zoomIn);
+    _ui->toolBar->addAction(loadIcon("zoom-out"), "Zoom Out", _ui->view, &SvgView::zoomOut);
     _zoomFitAction = _ui->toolBar->addAction(loadIcon("zoom-fit-best"), "Zoom Fit", _ui->view, &SvgView::zoomFit);
 
     connect(_process, &LayoutProcess::started, this, &MainWindow::layoutStarted);

@@ -40,13 +40,19 @@ void SvgView::load(const QByteArray& svgData)
 
 void SvgView::zoomIn()
 {
-    _scale *= 1.1;
+    auto old = _scale;
+    _scale *= 1.5;
+    _translation += 0.5 * ((1.0 / _scale) - (1.0 / old)) * QPointF(width(), height());
+
     update();
 }
 
 void SvgView::zoomOut()
 {
-    _scale *= 0.9;
+    auto old = _scale;
+    _scale *= 0.66666666666;
+    _translation += 0.5 * ((1.0 / _scale) - (1.0 / old)) * QPointF(width(), height());
+
     update();
 }
 
@@ -88,7 +94,7 @@ void SvgView::paintEvent(QPaintEvent*)
 
 void SvgView::wheelEvent(QWheelEvent* event)
 {
-    double oldScale{_scale};
+    auto old = _scale;
     
     if (event->delta() > 0)
     {
@@ -99,7 +105,7 @@ void SvgView::wheelEvent(QWheelEvent* event)
         _scale *= 0.9;
     }
     
-    _translation += ((1.0 / _scale) - (1.0 / oldScale)) * event->pos();
+    _translation += ((1.0 / _scale) - (1.0 / old)) * QPointF(event->pos());
     
     update();
 }
