@@ -3,6 +3,7 @@
 #include <QtWidgets/QMainWindow>
 
 class LayoutProcess;
+class QAction;
 class QActionGroup;
 class QMenu;
 class QSignalMapper;

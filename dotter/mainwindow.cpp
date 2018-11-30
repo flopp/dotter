@@ -1,6 +1,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QString>
+#include <QtWidgets/QActionGroup>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -25,14 +26,14 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // setup toolbar
     _openAction = _ui->toolBar->addAction(loadIcon("document-open"), "Open...", this, &MainWindow::showFileOpenDialog);
-    QMenu* layoutMenu{new QMenu{}};
-    auto layoutGroup{new QActionGroup{this}};
+    auto layoutMenu = new QMenu;
+    auto layoutGroup = new QActionGroup{this};
     _layoutDotAction   = addLayoutAction(layoutGroup, layoutMenu, "Dot", "dot");
     _layoutTwopiAction = addLayoutAction(layoutGroup, layoutMenu, "Twopi", "twopi");
     _layoutCircoAction = addLayoutAction(layoutGroup, layoutMenu, "Circo", "circo");
     _layoutNeatoAction = addLayoutAction(layoutGroup, layoutMenu, "Neato", "neato");
     _layoutFdpAction   = addLayoutAction(layoutGroup, layoutMenu, "FDP", "fdp");
-    QToolButton* layoutButton{new QToolButton{}};
+    auto layoutButton = new QToolButton{};
     layoutButton->setMenu(layoutMenu);
     layoutButton->setPopupMode(QToolButton::InstantPopup);
     layoutButton->setIcon(loadIcon("document-page-setup"));
@@ -127,7 +128,7 @@ QIcon MainWindow::loadIcon(QString name) const {
 
 QAction* MainWindow::addLayoutAction(QActionGroup* group, QMenu* menu, QString label, QString command)
 {
-    QAction* action{new QAction{label}};
+    auto action = new QAction{label};
     action->setCheckable(true);
     menu->addAction(action);
     group->addAction(action);
