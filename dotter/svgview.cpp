@@ -12,7 +12,7 @@ SvgView::SvgView(QWidget* parent) :
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     
-    connect(_renderer, SIGNAL(repaintNeeded()), this, SLOT(update()));
+    connect(_renderer, &QSvgRenderer::repaintNeeded, this, QOverload<>::of(&SvgView::update));
 }
 
 SvgView::~SvgView()
@@ -55,7 +55,6 @@ void SvgView::zoomFit()
     if (_renderer->isValid())
     {
         const QRectF& viewBox{_renderer->viewBox()};
-                
         if ((width() * viewBox.height()) > (height() * viewBox.width()))
         {
             _scale = height() / viewBox.height();
@@ -65,7 +64,7 @@ void SvgView::zoomFit()
             _scale = width() / viewBox.width();
         }
         
-        _translation = QPointF{0, 0};
+        _translation = 0.5 * QPointF{(width() / _scale) - viewBox.width(), (height() / _scale) - viewBox.height()};
         
         update();
     }
