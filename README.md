@@ -3,6 +3,8 @@
 # dotter
 Qt based viewer for GraphViz (.dot) files
 
+![Dotter](https://github.com/flopp/dotter/raw/master/examples/screenshot.png)
+
 ## Compile
 
 To compile dotter, you need a working Qt5 installation.

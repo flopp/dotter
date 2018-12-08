@@ -102,7 +102,9 @@ void MainWindow::layoutStopped()
 void MainWindow::layoutFinished(const QByteArray& result)
 {
     setWindowTitle(QString("%1 - %2").arg(qApp->applicationName()).arg(_fileName));
+    _ui->abort->hide();
     _ui->view->load(result);
+
 }
 
 void MainWindow::layoutError(const QString& message)
